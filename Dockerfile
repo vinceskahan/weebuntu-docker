@@ -4,7 +4,7 @@
 #
 # build via 'docker build -t weebuntu'
 #
-# run via 'docker run weebuntu -p 22 -p 80'
+# run via 'docker -p 22 -p 80 run -t weebuntu' 
 #     and optionally add -d to run detached in the backgroud
 #     or optionally add -t -i to monitor it in the foreground
 #
