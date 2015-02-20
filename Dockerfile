@@ -2,25 +2,24 @@
 #
 # Dockerfile for building a simulator driver weewx system
 #
-# build via 'docker build -t weebian'
+# build via 'docker build -t weebuntu'
 #
-# run via 'docker run weebian -p 22 -p 80'
+# run via 'docker run weebuntu -p 22 -p 80'
 #     and optionally add -d to run detached in the backgroud
 #     or optionally add -t -i to monitor it in the foreground
+#
+# or 'docker run -i -t weebuntu /bin/bash'
+#     and in the shell 'service start' nginx and weewx
 #
 # this Dockerfile sets root's password = root
 # and permits root logins over ssh for debugging
 #
-# note: this uses debian because it's 20% smaller than the
-#       corresponding ubuntu 14.04 build, and it permits root
-#       to ssh into the container without requiring edits
-#
 # last modified:
-#     2014-0120 vinceskahan@gmail.com - original
+#     2015-0220 vinceskahan@gmail.com - original
 #
 #-------------------------------------------------------
 
-FROM debian
+FROM ubuntu
 MAINTAINER Vince Skahan "vinceskahan@gmail.com"
 
 # misc, webserver, weewx prerequisites
@@ -43,10 +42,10 @@ RUN tar zxvf /tmp/weewx.tgz
 RUN cd weewx-* ; ./setup.py build ; ./setup.py install --quiet
 
 # link it into the nginx web
-RUN ln -s /usr/share/nginx/www /home/weewx/public_html
+RUN ln -s /usr/share/nginx/html /home/weewx/public_html
 
-# the init file is not needed in Docker since we start
-# manually via supervisord
+# not used under docker, but sometimes helpful to have installed
+RUN cp /home/weewx/util/init.d/weewx.debian /etc/init.d/weewx
 
 # DANGER WILL ROBINSON !!!!
 # set root's password to something trivial
