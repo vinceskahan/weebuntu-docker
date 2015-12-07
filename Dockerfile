@@ -15,6 +15,7 @@
 # and permits root logins over ssh for debugging
 #
 # last modified:
+#     2015-1206 vinceskahan@gmail.com - update to 3.3.1
 #     2015-0220 vinceskahan@gmail.com - original
 #
 #-------------------------------------------------------
@@ -36,7 +37,7 @@ RUN apt-get install -y supervisor openssh-server
 
 # install weewx via the setup.py method
 #  - the 'cd' below expects Tom to stick with the weewx-VERSION naming in his .tgz
-RUN wget http://weewx.com/downloads/weewx-3.3.0.tar.gz -O /tmp/weewx.tgz
+RUN wget http://weewx.com/downloads/weewx-3.3.1.tar.gz -O /tmp/weewx.tgz
 RUN cd /tmp
 RUN tar zxvf /tmp/weewx.tgz
 RUN cd weewx-* ; ./setup.py build ; ./setup.py install --no-prompt
