@@ -15,7 +15,8 @@
 # and permits root logins over ssh for debugging
 #
 # last modified:
-#     2015-1206 vinceskahan@gmail.com - update to 3.3.1
+#     2015-1211 - install pyephem, refactor to reduce layers
+#     2015-1206 - update to 3.3.1
 #     2015-0220 vinceskahan@gmail.com - original
 #
 #-------------------------------------------------------
@@ -25,43 +26,38 @@ MAINTAINER Vince Skahan "vinceskahan@gmail.com"
 EXPOSE 22
 EXPOSE 80
 
-# misc, webserver, weewx prerequisites
-RUN apt-get update; apt-get install -y sqlite3 wget curl procps \
-   nginx \
-   python-configobj python-cheetah python-imaging python-serial python-usb python-dev
-
-# for multiple processes running in the container
-RUN apt-get install -y supervisor openssh-server
-
-#---- uncomment to set your timezone to other than UTC
-RUN TIMEZONE="US/Pacific" && echo $TIMEZONE > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
-
-#---- uncomment for the optional pyephem
-
-RUN apt-get install -y python-pip && pip install pyephem
-
-# install weewx via the setup.py method
-#  - the 'cd' below expects Tom to stick with the weewx-VERSION naming in his .tgz
-RUN wget http://weewx.com/downloads/weewx-3.3.1.tar.gz -O /tmp/weewx.tgz
-RUN cd /tmp
-RUN tar zxvf /tmp/weewx.tgz
-RUN cd weewx-* ; ./setup.py build ; ./setup.py install --no-prompt
-
-# link it into the nginx web
-RUN ln -s /usr/share/nginx/html /home/weewx/public_html
-
-# not used under docker, but sometimes helpful to have installed
-RUN cp /home/weewx/util/init.d/weewx.debian /etc/init.d/weewx
-
 # DANGER WILL ROBINSON !!!!
 # set root's password to something trivial
 RUN echo "root:root" | chpasswd
 
+#---- uncomment to set your timezone to other than UTC
+RUN TIMEZONE="US/Pacific" && echo $TIMEZONE > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
+
 # sshd needs its /var/run tree there to successfully start up
 RUN mkdir /var/run/sshd
 
-# use 'supervisord' to start multiple processes in the container
+# this slows things down a lot - perhaps comment out ?
+RUN apt-get update
+
+# copy supervisor config file into place
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# install misc packages, webserver, weewx prerequisites, pip, supervisord/sshd
+# then install pyephem via pip
+# then install weewx via the setup.py method
+#  - the 'cd' below expects Tom to stick with the weewx-VERSION naming in his .tgz
+RUN apt-get install -y sqlite3 wget curl procps \
+        nginx \
+        python-configobj python-cheetah python-imaging python-serial python-usb python-dev \
+        python-pip \
+        supervisor openssh-server \
+    && pip install pyephem  \
+    && wget http://weewx.com/downloads/weewx-3.3.1.tar.gz -O /tmp/weewx.tgz && \
+      cd /tmp && \
+      tar zxvf /tmp/weewx.tgz && \
+      cd weewx-* ; ./setup.py build ; ./setup.py install --no-prompt && \
+      ln -s /usr/share/nginx/html /home/weewx/public_html && \
+      cp /home/weewx/util/init.d/weewx.debian /etc/init.d/weewx
 
 # call supervisord as our container process to run
 CMD ["/usr/bin/supervisord"]
