@@ -1,3 +1,8 @@
+# DEPRECATED - DO NOT USE
+see my weewx-docker repo instead
+
+----
+
 # Docker implementation of weewx in simulator mode
 
 This small set of files lets you spin up a working Docker instance of weewx on top of minimal ubuntu within just a minute or two, depending on your bandwidth.
